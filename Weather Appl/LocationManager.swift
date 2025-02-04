@@ -41,7 +41,6 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    // MARK: - CLLocationManagerDelegate Methods
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if locationManager.authorizationStatus != .denied {
             requestLocation()

@@ -9,6 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var locationService = LocationManager()
+    @State private var viewModel = WeatherViewModel()
+
+    init() {
+            let locationManager = LocationManager()
+            _locationService = State(initialValue: locationManager)
+            _viewModel = State(initialValue: WeatherViewModel(locationManager: locationManager))
+        }
 
     var body: some View {
         VStack {
@@ -27,11 +34,13 @@ struct ContentView: View {
             }
         }
         .padding()
-        .onAppear {
+        .task {
             locationService.requestLocation()
+            await viewModel.fetchWeatherData()
         }
         .refreshable {
             locationService.requestLocation()
+            await viewModel.fetchWeatherData()
         }
     }
 }
