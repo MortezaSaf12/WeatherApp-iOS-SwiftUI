@@ -58,6 +58,5 @@ class WeatherViewModel {
         } catch {
             print("Error: \(error.localizedDescription)")
         }
-        
     }
 }
