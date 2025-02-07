@@ -31,8 +31,18 @@ struct ContentView: View {
                 Spacer()
                 
                 if let weatherData = viewModel.weatherData {
-                    Text("\(weatherData.current.temperature_2m, specifier: "%.0f")°C")
-                        .font(.system(size: 72, weight: .medium))
+                    VStack(spacing: 8) {
+                        Image(systemName: viewModel.symbolForWeatherCode(weatherData.current.weather_code))
+                            .font(.system(size: 48))
+                            .symbolRenderingMode(.multicolor)
+                        
+                        Text("\(weatherData.current.temperature_2m, specifier: "%.0f")°C")
+                            .font(.system(size: 72, weight: .medium))
+                        
+                        Text(weatherData.current.weatherDescription)
+                            .font(.title3)
+                            .foregroundColor(Color(.systemGray))
+                    }
                 } else {
                     ProgressView("Loading weather...")
                 }
@@ -45,13 +55,26 @@ struct ContentView: View {
                     Text("See 7-Day Forecast")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .background(Color(#colorLiteral(red: 0.8392156863, green: 0.8823529412, blue: 0.9764705882, alpha: 1)))
+                            .foregroundColor(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
             }
             .padding()
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(#colorLiteral(red: 0.9254901961, green: 0.9568627451, blue: 0.9921568627, alpha: 1)),
+                        Color(#colorLiteral(red: 0.8392156863, green: 0.8823529412, blue: 0.9764705882, alpha: 1))
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            )
+            
             .task {
                 locationService.startUpdatingLocation()
                 await viewModel.fetchWeatherData()
@@ -90,6 +113,9 @@ struct ForecastView: View {
                                     Text(formatDate(daily.time[index]))
                                         .font(.system(size: 15, weight: .semibold))
                                         .frame(width: 80, alignment: .leading)
+                                    //Symbols
+                                    Image(systemName: viewModel.symbolForWeatherCode(daily.weather_code[index]))
+                                        .symbolRenderingMode(.multicolor)
                                 }
                                 
                                 Spacer()
@@ -109,8 +135,11 @@ struct ForecastView: View {
                                 .font(.system(size: 16, weight: .medium))
                             }
                             .padding(16)
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.9)))
+                                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 2)
+                            )
                             .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                             .padding(.horizontal, 16)
                         }
@@ -130,8 +159,8 @@ struct ForecastView: View {
                 Text("Main Screen")
                     .frame(width: 200)
                     .padding()
-                    .background(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]), startPoint: .leading, endPoint: .trailing))
-                    .foregroundColor(.white)
+                    .background(Color(#colorLiteral(red: 0.8392156863, green: 0.8823529412, blue: 0.9764705882, alpha: 1)))
+                    .foregroundColor(.black)
                     .clipShape(Capsule())
                     .shadow(color: Color.blue.opacity(0.2), radius: 8, x: 0, y: 4)
             }
@@ -147,7 +176,19 @@ struct ForecastView: View {
         .navigationBarBackButtonHidden()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(#colorLiteral(red: 0.9254901961, green: 0.9568627451, blue: 0.9921568627, alpha: 1)),
+                    Color(#colorLiteral(red: 0.8392156863, green: 0.8823529412, blue: 0.9764705882, alpha: 1))
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+        )
     }
+    
     
     private func formatDate(_ dateString: String) -> String {
         let formatter = DateFormatter()
