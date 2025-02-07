@@ -59,4 +59,23 @@ class WeatherViewModel {
             print("Error: \(error.localizedDescription)")
         }
     }
+    
+    // Add this symbol mapping function
+    func symbolForWeatherCode(_ code: Int) -> String {
+        switch code {
+        case 0: return "sun.max"          // Sunny
+        case 1, 2: return "cloud.sun"     // Partly Cloudy
+        case 3: return "cloud"            // Cloudy
+        case 45, 48: return "cloud.fog"   // Foggy
+        case 51...57: return "cloud.drizzle" // Drizzle
+        case 61...67: return "cloud.rain" // Rain
+        case 71...77: return "snow"       // Snow
+        case 80...82: return "cloud.rain" // Rain Showers
+        case 85...86: return "cloud.snow" // Snow Showers
+        case 95...99: return "cloud.bolt.rain" // Thunderstorm
+        default: return "questionmark"
+        }
+    }
+    
+    
 }
