@@ -17,44 +17,96 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     
     var location: CLLocation?
     var address: String?
-
+    
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
-
-    func requestLocation() {
+    
+    // Start continuous location updates
+    func startUpdatingLocation() {
         if locationManager.authorizationStatus == .notDetermined {
+            print("Requesting location authorization...")
             locationManager.requestWhenInUseAuthorization()
         } else if locationManager.authorizationStatus != .denied {
-            locationManager.requestLocation()
+            print("Starting continuous location updates...")
+            locationManager.startUpdatingLocation() // Continuous updates
+        } else {
+            print("Location services denied by the user.")
         }
     }
-
+    
+    /*
+    func requestLocation() {
+        if locationManager.authorizationStatus == .notDetermined {
+            print("Requesting location authorization...")
+            locationManager.requestWhenInUseAuthorization()
+        } else if locationManager.authorizationStatus != .denied {
+            print("Requesting single location update...")
+            locationManager.requestLocation()
+        } else {
+            print("Location services denied by the user.")
+        }
+    }
+    */
+    
     private func reverseGeocodeLocation(_ location: CLLocation) {
         Task {
-            let placemarks = try? await geocoder.reverseGeocodeLocation(location)
-            if let placemark = placemarks?.last {
-                address = "\(placemark.locality ?? "Unknown"), \(placemark.country ?? "Unknown")"
+            do {
+                let placemarks = try await geocoder.reverseGeocodeLocation(location)
+                if let placemark = placemarks.last {
+                    address = "\(placemark.locality ?? "Unknown"), \(placemark.country ?? "Unknown")"
+                    print("Reverse geocoded address: \(address ?? "Unknown")")
+                }
+            } catch {
+                print("Failed to reverse geocode location: \(error.localizedDescription)")
             }
         }
     }
-
+    
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if locationManager.authorizationStatus != .denied {
-            requestLocation()
+        let status = manager.authorizationStatus
+        print("Location authorization status changed to: \(status.rawValue)")
+        
+        if status != .denied {
+            print("Authorization granted or undetermined. Starting location updates...")
+            startUpdatingLocation()
+        } else {
+            print("Location services denied by the user.")
         }
     }
-
+    
+    weak var delegate: LocationManagerDelegate?
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = locations.last
-        if let location = location {
-            reverseGeocodeLocation(location)
+        guard let location = locations.last else {
+            print("No location data received in didUpdateLocations.")
+            return
+        }
+        
+        print("Updated Location: Latitude: \(location.coordinate.latitude), Longitude: \(location.coordinate.longitude)")
+        
+        self.location = location
+        reverseGeocodeLocation(location)
+        delegate?.locationDidUpdate(to: location) // Notify delegate
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        let clError = error as? CLError
+        switch clError?.code {
+        case .locationUnknown:
+            print("Location is currently unknown. Retrying...")
+            // Optionally, retry fetching the location after a delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.locationManager.startUpdatingLocation()
+            }
+        default:
+            print("Failed to find user's location: \(error.localizedDescription)")
         }
     }
+}
 
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Failed to find user's location: \(error.localizedDescription)")
-    }
+protocol LocationManagerDelegate: AnyObject {
+    func locationDidUpdate(to location: CLLocation)
 }

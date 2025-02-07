@@ -6,6 +6,15 @@
 //
 
 import Foundation
+import CoreLocation
+
+extension WeatherViewModel: LocationManagerDelegate {
+    func locationDidUpdate(to location: CLLocation) {
+        Task { @MainActor in
+            await fetchWeatherData()
+        }
+    }
+}
 
 @Observable
 class WeatherViewModel {
@@ -16,13 +25,14 @@ class WeatherViewModel {
     private(set) var isLoading = false
     private(set) var weatherData: WeatherResponse?
     let locationManager: LocationManager
-    
+
     init(locationManager: LocationManager = LocationManager()) {
         self.locationManager = locationManager
+        self.locationManager.delegate = self // Set as delegate
     }
 
     private func makeUrl(latitude: Double, longitude: Double) -> String {
-        "\(baseUrl)?latitude=\(latitude)&longitude=\(longitude)&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin"
+        "\(baseUrl)?latitude=\(latitude)&longitude=\(longitude)&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min"
     }
 
     func fetchWeatherData() async {
@@ -48,5 +58,6 @@ class WeatherViewModel {
         } catch {
             print("Error: \(error.localizedDescription)")
         }
+        
     }
 }

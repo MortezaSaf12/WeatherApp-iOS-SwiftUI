@@ -18,12 +18,13 @@ struct ContentView: View {
         }
 
     var body: some View {
+        
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             
-            if let location = locationService.location {
+            if let location = viewModel.locationManager.location {
                 Text("Current Location: \(location.coordinate.latitude), \(location.coordinate.longitude)")
             } else {
                 Text("No location available")
@@ -35,11 +36,11 @@ struct ContentView: View {
         }
         .padding()
         .task {
-            locationService.requestLocation()
+            locationService.startUpdatingLocation()
             await viewModel.fetchWeatherData()
         }
         .refreshable {
-            locationService.requestLocation()
+            locationService.startUpdatingLocation()
             await viewModel.fetchWeatherData()
         }
     }
