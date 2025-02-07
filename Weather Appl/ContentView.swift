@@ -18,31 +18,47 @@ struct ContentView: View {
         }
 
     var body: some View {
-        
+            NavigationStack {
+                VStack {
+                    Image(systemName: "globe")
+                        .imageScale(.large)
+                        .foregroundStyle(.tint)
+                    
+                    if let location = viewModel.locationManager.location {
+                        Text("Current Location: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+                    } else {
+                        Text("No location available")
+                    }
+                    
+                    if let address = locationService.address {
+                        Text("Address: \(address)")
+                    }
+                    
+                    NavigationLink("Go to Forecast", destination: ForecastView())
+                        .padding()
+                }
+                .padding()
+                .task {
+                    locationService.startUpdatingLocation()
+                    await viewModel.fetchWeatherData()
+                }
+                .refreshable {
+                    locationService.startUpdatingLocation()
+                    await viewModel.fetchWeatherData()
+                }
+                .navigationTitle("Home Screen")
+            }
+        }
+    }
+
+struct ForecastView: View {
+    var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            
-            if let location = viewModel.locationManager.location {
-                Text("Current Location: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-            } else {
-                Text("No location available")
-            }
-            
-            if let address = locationService.address {
-                Text("Address: \(address)")
-            }
+            Text("Weather Forecast")
+                .font(.largeTitle)
+                .padding()
         }
-        .padding()
-        .task {
-            locationService.startUpdatingLocation()
-            await viewModel.fetchWeatherData()
-        }
-        .refreshable {
-            locationService.startUpdatingLocation()
-            await viewModel.fetchWeatherData()
-        }
+        .navigationTitle("Forecast")
     }
 }
 
