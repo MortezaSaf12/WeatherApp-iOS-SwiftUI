@@ -1,6 +1,6 @@
 # Weather App
 
-A minimalist iOS weather application that provides current weather conditions and 7-day forecasts based on your location.
+A clean iOS weather app with 7 day forecasts using Open-Meteo API, CoreLocation, and SwiftUI Observable pattern. Features real-time location tracking.
 
 ## Features
 
